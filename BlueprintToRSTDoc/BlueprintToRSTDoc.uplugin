@@ -1,0 +1,23 @@
+{
+    "FileVersion": 3,
+    "Version": 1,
+    "VersionName": "1.0",
+    "FriendlyName": "Blueprint to RST Documentation",
+    "Description": "Generate reStructuredText Format Documentation from Blueprint",
+    "Category": "Other",
+    "CreatedBy": "Nutti",
+    "CreatedByURL": "https://github.com/nutti/UE4-BlueprintToRSTDoc",
+    "DocsURL": "",
+    "MarketplaceURL": "",
+    "SupportURL": "",
+    "CanContainContent": true,
+    "IsBetaVersion": false,
+    "Installed": false,
+    "Modules": [
+        {
+            "Name": "BlueprintToRSTDoc",
+            "Type": "Runtime",
+            "LoadingPhase": "PreLoadingScreen"
+        }
+    ]
+}
