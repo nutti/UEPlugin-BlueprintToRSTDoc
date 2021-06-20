@@ -15,7 +15,7 @@ This is a UE4 plugin to generate reStructuredText format documents from Blueprin
 
 ## Download / Installation
 
-All released BlueprintToSphinxDoc plugin is availabled on [Release Page](https://github.com/nutti/UE4-BlueprintToRSTDoc/releases).  
+All released BlueprintToSphinxDoc plugin is available on [Release Page](https://github.com/nutti/UE4-BlueprintToRSTDoc/releases).  
 If you want to try newest (unstable) version, you can download it from [unstable version](https://github.com/nutti/UE4-BlueprintToRSTDoc/archive/main.zip).
 
 See [Document](docs/installation.md) if you have any trouble to install this add-on.
