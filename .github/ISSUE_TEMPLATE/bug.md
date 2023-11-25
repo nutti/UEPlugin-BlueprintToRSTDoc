@@ -7,23 +7,23 @@ assignees: ''
 
 ---
 
-**System Information**  
+### System Information
 
 * OS: [e.g. Windows]
-* UE4 version: [e.g. 2.79]
-* Add-on version: [e.g. 5.2]
+* Unreal Engine version: [e.g. 5.0.0]
+* Plugin version: [e.g. 1.0.0]
 
+### Expected behavior
 
-**Expected behavior**  
 *The behavior you expect about the feature you reported.*
 
+### Description about the bug
 
-**Description about the bug**  
 *The description about the bug.*
 
+### Screenshots/Logs [Optional]
 
-**Screenshots/Files** [Optional]  
-*It is good to solve the bug if you attach the screenshot or log files.*
+*It is good to solve the bug if you attach screenshots or logs (like crash*
+*report).*
 
-
-**Additional comments** [Optional]  
+### Additional comments [Optional]

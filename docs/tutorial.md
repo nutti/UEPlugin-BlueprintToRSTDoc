@@ -1,9 +1,12 @@
-## Tutorial
+# Tutorial
 
+## 1. Configure documents generation settings
 
-### 1. Configure documents generation settings
+The configuration for this plugin is available on *Settings* >
+*Project Settings...* > *Plugins* > *BlueprintToRSTDoc*.
 
-The configuration for this plugin is available on *Settings* > *Project Settings...* > *Plugins* > *BlueprintToRSTDoc*.
+<!-- markdownlint-disable MD013 -->
+<!-- markdownlint-disable MD033 -->
 
 |**Category**|**Item**|**Description**|
 |---|---|---|
@@ -17,19 +20,22 @@ The configuration for this plugin is available on *Settings* > *Project Settings
 ||File Name|File name of a document list.|
 ||Full File Path|When this setting is on, output full file path of documents.|
 
+<!-- markdownlint-enable MD033 -->
+<!-- markdownlint-enable MD013 -->
 
-### 2. Generate documents
+## 2. Generate documents
 
 ![Tutorial Process 2](images/tutorial/process_2.png)
 
 Click *BlueprintToRSTDoc* button or execute *Window* > *BlueprintToRSTDoc*.  
-Then, specify the output directory of generated documents. (This process will be skipped when the setting *Path > Always Ask Output Directory* is off.)
+Then, specify the output directory of generated documents. (This process will
+be skipped when the setting *Path > Always Ask Output Directory* is off.)
 
-After generating documents, message box will be popped up.
+After generating documents, message box will be popped up.  
 Generated documents are located on the directory you specified.
 
+## 3. Use Sphinx to generate pretty documents (Optional)
 
-### 3. Use Sphinx to generate pretty documents (Optional)
-
-You can use [Sphinx](https://www.sphinx-doc.org/en/master/) to generate more sophisticated document.
+You can use [Sphinx](https://www.sphinx-doc.org/en/master/) to generate more
+sophisticated document.  
 See the document pages for detail.

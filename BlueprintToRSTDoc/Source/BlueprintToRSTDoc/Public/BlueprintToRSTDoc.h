@@ -2,20 +2,18 @@
 
 #pragma once
 
-#include "Modules/ModuleManager.h"
-
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-
+#include "Modules/ModuleManager.h"
 
 class FBlueprintToRSTDocModule : public IModuleInterface
 {
 public:
-    virtual void StartupModule() override;
-    virtual void ShutdownModule() override;
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
 
-    void CommandExecuted();
+	void CommandExecuted();
 
 private:
-    void AddToolBarExtension(FToolBarBuilder& Builder);
-    void AddMenuExtension(FMenuBuilder& Builder);
+	void AddToolBarExtension(FToolBarBuilder& Builder);
+	void AddMenuExtension(FMenuBuilder& Builder);
 };
