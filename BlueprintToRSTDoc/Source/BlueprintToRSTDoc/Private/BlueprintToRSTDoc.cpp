@@ -7,10 +7,11 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "ISettingsModule.h"
 #include "LevelEditor.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Settings.h"
 #include "Style.h"
 
-#define LOCTEXT_NAMESPACE "FBlueprintToRSTDocModule"
+#define LOCTEXT_NAMESPACE "BlueprintToRSTDoc"
 
 void FBlueprintToRSTDocModule::StartupModule()
 {
@@ -26,14 +27,22 @@ void FBlueprintToRSTDocModule::StartupModule()
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 
 	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
-	MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, Commands,
+	MenuExtender->AddMenuExtension("Tools", EExtensionHook::After, Commands,
 		FMenuExtensionDelegate::CreateRaw(this, &FBlueprintToRSTDocModule::AddMenuExtension));
 	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
+	UToolMenu* UserToolMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.User");
+	FToolMenuSection& UserToolMenuSection = UserToolMenu->AddSection("BlueprintToRSTDoc");
+	FToolMenuEntry& Entry =
+		UserToolMenuSection.AddEntry(FToolMenuEntry::InitToolBarButton(FBlueprintToRSTDocCommands::Get().Action));
+	Entry.SetCommandList(Commands);
+#else
 	TSharedPtr<FExtender> ToolBarExtender = MakeShareable(new FExtender());
-	ToolBarExtender->AddToolBarExtension("Settings", EExtensionHook::After, Commands,
+	ToolBarExtender->AddToolBarExtension("LevelEditor.LevelEditorToolBar.User", EExtensionHook::After, Commands,
 		FToolBarExtensionDelegate::CreateRaw(this, &FBlueprintToRSTDocModule::AddToolBarExtension));
 	LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolBarExtender);
+#endif
 
 	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
 	UBlueprintToRSTDocSettings* Settings = GetMutableDefault<UBlueprintToRSTDocSettings>();

@@ -1,11 +1,13 @@
 #include "BPLibrary.h"
 
-#include "AssetRegistryModule.h"
-#include "DesktopPlatform/Public/DesktopPlatformModule.h"
-#include "DesktopPlatform/Public/IDesktopPlatform.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "DesktopPlatformModule.h"
 #include "EdGraphSchema_K2.h"
+#include "Engine/UserDefinedEnum.h"
+#include "Engine/UserDefinedStruct.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "HAL/FileManagerGeneric.h"
+#include "IDesktopPlatform.h"
 #include "Settings.h"
 
 #define ERROR_MESSAGE_BOX(Message)                                                                                 \
@@ -17,6 +19,139 @@ void ConvertBPNameToCPPName(FString& Out, const FString& Type)
 {
 	Out = Type;
 	Out = Out.Replace(TEXT(" "), TEXT("_"));
+}
+
+bool ConvertToBuiltinType(FString& Out, const FString& Type)
+{
+	Out.Empty();
+
+	TMap<FString, FString> ConversionDict = {
+		{TEXT("Double"), TEXT("double")},
+		{TEXT("Byte"), TEXT("int8")},
+		{TEXT("int"), TEXT("int")},
+		{TEXT("Str"), TEXT("String")},
+		{TEXT("Bool"), TEXT("bool")},
+	};
+
+	FString* Converted = ConversionDict.Find(Type);
+	if (Converted == nullptr)
+	{
+		return false;
+	}
+	Out = *Converted;
+
+	return true;
+}
+
+FString GetEdGraphPinName(UEdGraphPin* Pin)
+{
+	FString PinName;
+
+	PinName = Pin->PinName.ToString();
+	ConvertBPNameToCPPName(PinName, PinName);
+
+	return PinName;
+}
+
+FString GetEdGraphPinType(UEdGraphPin* Pin)
+{
+	FString PinType;
+
+	if (Pin->PinType.PinSubCategoryObject != nullptr)
+	{
+		UObject* PinSubCategoryObject = Pin->PinType.PinSubCategoryObject.Get();
+		if (PinSubCategoryObject->GetClass()->ClassGeneratedBy != nullptr)
+		{
+			PinType = PinSubCategoryObject->GetClass()->ClassGeneratedBy->GetName();
+		}
+		else
+		{
+			if (PinSubCategoryObject->IsInBlueprint())
+			{
+				UBlueprintGeneratedClass* BPGenClass = Cast<UBlueprintGeneratedClass>(PinSubCategoryObject);
+				PinType = BPGenClass->ClassGeneratedBy->GetName();
+			}
+			else
+			{
+				PinType = PinSubCategoryObject->GetName();
+			}
+		}
+	}
+	else
+	{
+		if (Pin->PinType.PinCategory == UEdGraphSchema_K2::PC_Real)
+		{
+			PinType = Pin->PinType.PinSubCategory.ToString();
+		}
+		else
+		{
+			PinType = Pin->PinType.PinCategory.ToString();
+		}
+	}
+
+	return PinType;
+}
+
+FString GetPropertyName(FProperty* Property, bool bIsBlueprint)
+{
+	FString PropertyName;
+
+	if (bIsBlueprint)
+	{
+		if (Property->GetFullGroupName(true).Right(2) != TEXT("_C"))
+		{
+			PropertyName = "";
+		}
+		else
+		{
+			PropertyName = Property->GetName();
+		}
+	}
+	else
+	{
+		PropertyName = Property->GetAuthoredName();
+	}
+	ConvertBPNameToCPPName(PropertyName, PropertyName);
+
+	return PropertyName;
+}
+
+FString GetPropertyType(FProperty* Property)
+{
+	FString PropertyType;
+
+	FStructProperty* StructProperty = CastField<FStructProperty>(Property);
+	FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property);
+	if (StructProperty)
+	{
+		PropertyType = StructProperty->Struct->GetName();
+	}
+	else if (ObjectProperty)
+	{
+		if (ObjectProperty->PropertyClass->ClassGeneratedBy != nullptr)
+		{
+			PropertyType = ObjectProperty->PropertyClass->ClassGeneratedBy->GetName();
+		}
+		else
+		{
+			PropertyType = ObjectProperty->PropertyClass->GetName();
+		}
+	}
+	else
+	{
+		FString Type = Property->GetClass()->GetName().Replace(TEXT("Property"), TEXT(""));
+		FString Converted;
+		if (ConvertToBuiltinType(Converted, Type))
+		{
+			PropertyType = Converted;
+		}
+		else
+		{
+			PropertyType = Type;
+		}
+	}
+
+	return PropertyType;
 }
 
 class RSTDocIndent
@@ -148,17 +283,8 @@ bool ParseEdGraph(FRSTDocEdGraph& Out, UEdGraph* Graph, UClass* BPClass)
 		for (auto& Pin : Node->GetAllPins())
 		{
 			FRSTDocEdGraphPin RSTEdGraphPin;
-			RSTEdGraphPin.Name = Pin->PinName.ToString();
-			ConvertBPNameToCPPName(RSTEdGraphPin.Name, RSTEdGraphPin.Name);
-
-			if (Pin->PinType.PinSubCategoryObject != nullptr)
-			{
-				RSTEdGraphPin.Type = Pin->PinType.PinSubCategoryObject->GetName();
-			}
-			else
-			{
-				RSTEdGraphPin.Type = Pin->PinType.PinCategory.ToString();
-			}
+			RSTEdGraphPin.Name = GetEdGraphPinName(Pin);
+			RSTEdGraphPin.Type = GetEdGraphPinType(Pin);
 			RSTEdGraphPin.DefaultValue = Pin->GetDefaultAsString();
 			RSTEdGraphPin.ToolTips = Pin->PinToolTip.Replace(TEXT("\n"), TEXT(" "));
 
@@ -205,7 +331,6 @@ void ParsePropertyFlags(TArray<FString>& Out, uint64 Flags)
 	if (Flags & EPropertyFlags::CPF_InstancedReference) { Out.Add(TEXT("Instanced Reference")); }
 
 	if (Flags & EPropertyFlags::CPF_DuplicateTransient) { Out.Add(TEXT("Duplicate Transient")); }
-	if (Flags & EPropertyFlags::CPF_SubobjectReference) { Out.Add(TEXT("SubobjectReference")); }
 
 	if (Flags & EPropertyFlags::CPF_SaveGame) { Out.Add(TEXT("Save Game")); }
 	if (Flags & EPropertyFlags::CPF_NoClear) { Out.Add(TEXT("No Clear")); }
@@ -297,29 +422,7 @@ void ParsePropertyLifetimeCondition(FString& Out, const ELifetimeCondition& Cond
 	}
 }
 
-bool ConvertToBuiltinType(FString& Out, const FString& Type)
-{
-	Out.Empty();
-
-	TMap<FString, FString> ConversionDict = {
-		{TEXT("Float"), TEXT("float")},
-		{TEXT("Byte"), TEXT("int8")},
-		{TEXT("int"), TEXT("int")},
-		{TEXT("Str"), TEXT("String")},
-		{TEXT("Bool"), TEXT("bool")},
-	};
-
-	FString* Converted = ConversionDict.Find(Type);
-	if (Converted == nullptr)
-	{
-		return false;
-	}
-	Out = *Converted;
-
-	return true;
-}
-
-bool ParseProperty(FRSTDocProperty& Out, UProperty* Property, bool bIsBlueprint = true)
+bool ParseProperty(FRSTDocProperty& Out, FProperty* Property, bool bIsBlueprint = true)
 {
 	if (bIsBlueprint)
 	{
@@ -327,38 +430,10 @@ bool ParseProperty(FRSTDocProperty& Out, UProperty* Property, bool bIsBlueprint 
 		{
 			return false;
 		}
+	}
 
-		Out.Name = Property->GetName();
-	}
-	else
-	{
-		Out.Name = Property->GetAuthoredName();
-	}
-	ConvertBPNameToCPPName(Out.Name, Out.Name);
-
-	UStructProperty* StructProperty = Cast<UStructProperty>(Property);
-	UObjectProperty* ObjectProperty = Cast<UObjectProperty>(Property);
-	if (StructProperty)
-	{
-		Out.Type = StructProperty->Struct->GetName();
-	}
-	else if (ObjectProperty)
-	{
-		Out.Type = ObjectProperty->PropertyClass->GetName();
-	}
-	else
-	{
-		FString Type = Property->GetClass()->GetName().Replace(TEXT("Property"), TEXT(""));
-		FString Converted;
-		if (ConvertToBuiltinType(Converted, Type))
-		{
-			Out.Type = Converted;
-		}
-		else
-		{
-			Out.Type = Type;
-		}
-	}
+	Out.Name = GetPropertyName(Property, bIsBlueprint);
+	Out.Type = GetPropertyType(Property);
 
 	Property->GetMetaData(TEXT("Category")).ParseIntoArray(Out.Category, TEXT("|"));
 	Out.ToolTips = Property->GetMetaData(TEXT("ToolTip")).Replace(TEXT("\n"), TEXT(" "));
@@ -443,12 +518,12 @@ bool GetStructureAssets(TArray<FAssetData>& ScriptStructs, const UBlueprintToRST
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
 	Filter.bIncludeOnlyOnDiskAssets = true;
-	Filter.ClassNames.Add(UScriptStruct::StaticClass()->GetFName());
+	Filter.ClassNames.Add(UUserDefinedStruct::StaticClass()->GetFName());
 	Filter.bRecursiveClasses = true;
 
 	if (!AssetRegistry.GetAssets(Filter, ScriptStructs))
 	{
-		ERROR_MESSAGE_BOX(TEXT("Failed to get assets of 'UScriptStruct'."));
+		ERROR_MESSAGE_BOX(TEXT("Failed to get assets of 'UUserDefinedStruct'."));
 		return false;
 	}
 
@@ -486,7 +561,7 @@ bool GetEnumerationAssets(TArray<FAssetData>& Enums, const UBlueprintToRSTDocSet
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
 	Filter.bIncludeOnlyOnDiskAssets = true;
-	Filter.ClassNames.Add(UEnum::StaticClass()->GetFName());
+	Filter.ClassNames.Add(UUserDefinedEnum::StaticClass()->GetFName());
 	Filter.bRecursiveClasses = true;
 
 	if (!AssetRegistry.GetAssets(Filter, Enums))
@@ -580,9 +655,9 @@ void ParseBlueprints(TArray<FRSTDocBlueprint>& Result, const TArray<FAssetData>&
 		}
 
 		// Parse properties.
-		for (TFieldIterator<UProperty> It(BPClass); It; ++It)
+		for (TFieldIterator<FProperty> It(BPClass); It; ++It)
 		{
-			UProperty* Property = *It;
+			FProperty* Property = *It;
 			FRSTDocProperty RSTProperty;
 			if (ParseProperty(RSTProperty, Property))
 			{
@@ -598,7 +673,7 @@ void ParseStructures(TArray<FRSTDocStructure>& Result, const TArray<FAssetData>&
 {
 	for (auto& S : ScriptStructs)
 	{
-		UScriptStruct* ScriptStruct = Cast<UScriptStruct>(S.GetAsset());
+		UUserDefinedStruct* ScriptStruct = Cast<UUserDefinedStruct>(S.GetAsset());
 		if (ScriptStruct == nullptr)
 		{
 			continue;
@@ -612,9 +687,9 @@ void ParseStructures(TArray<FRSTDocStructure>& Result, const TArray<FAssetData>&
 		RSTStruct.ToolTips = ScriptStruct->GetMetaData(TEXT("ToolTip")).Replace(TEXT("\n"), TEXT(" "));
 
 		// Parse properties.
-		for (TFieldIterator<UProperty> It(ScriptStruct); It; ++It)
+		for (TFieldIterator<FProperty> It(ScriptStruct); It; ++It)
 		{
-			UProperty* Property = *It;
+			FProperty* Property = *It;
 			FRSTDocProperty RSTProperty;
 			if (ParseProperty(RSTProperty, Property, false))
 			{
@@ -641,7 +716,7 @@ void ParseEnumerations(TArray<FRSTDocEnumeration>& Result, const TArray<FAssetDa
 {
 	for (auto& E : Enums)
 	{
-		UEnum* Enum = Cast<UEnum>(E.GetAsset());
+		UUserDefinedEnum* Enum = Cast<UUserDefinedEnum>(E.GetAsset());
 		if (Enum == nullptr)
 		{
 			continue;
@@ -685,7 +760,7 @@ void CreateRSTPropertyDoc(FString& Doc, RSTDocIndent& Indent, const FRSTDocPrope
 		TEXT("{0}Access Modifier: {1}\n"), {Indent.ToString(), FString::Join(Property.AccessModifiers, TEXT(", "))});
 
 	// Property flags.
-	Doc += FString::Format(TEXT("{0}Flags: {1}\n\n"), {Indent.ToString(), FString::Join(Property.Flags, TEXT(", "))});
+	Doc += FString::Format(TEXT("{0}Flags: {1}\n"), {Indent.ToString(), FString::Join(Property.Flags, TEXT(", "))});
 
 	// Property lifetime condition.
 	Doc += FString::Format(TEXT("{0}Lifetime Condition: {1}\n\n"), {Indent.ToString(), Property.LifetimeCondition});
@@ -751,7 +826,7 @@ void CreateRSTEdGraphDoc(FString& Doc, RSTDocIndent& Indent, const FRSTDocEdGrap
 	}
 	else
 	{
-		ReturnStr = FString::Format(TEXT("({1})"), {FString::Join(ReturnDocs, TEXT(", "))});
+		ReturnStr = FString::Format(TEXT("({0})"), {FString::Join(ReturnDocs, TEXT(", "))});
 	}
 	Doc += FString::Format(TEXT("{0}.. cpp:function:: {1} {2}({3})\n\n"),
 		{Indent.ToString(), ReturnStr, EdGraph.Name, FString::Join(ArgDocs, TEXT(", "))});

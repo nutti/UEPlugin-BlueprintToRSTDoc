@@ -11,14 +11,8 @@ public class BlueprintToRSTDoc : ModuleRules
 		PublicIncludePaths.AddRange(new string[]{});
 		PrivateIncludePaths.AddRange(new string[]{"BlueprintToRSTDoc/Public"});
 		PublicDependencyModuleNames.AddRange(new string[]{"Core"});
-		PrivateDependencyModuleNames.AddRange(new string[]{
-			"Projects",
-			"CoreUObject",
-			"Engine",
-			"Slate",
-			"SlateCore",
-			"BlueprintGraph",
-		});
+		PrivateDependencyModuleNames.AddRange(
+			new string[]{"Projects", "CoreUObject", "Engine", "Slate", "SlateCore", "BlueprintGraph", "ToolMenus", "Kismet"});
 		DynamicallyLoadedModuleNames.AddRange(new string[]{});
 	}
 }

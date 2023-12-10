@@ -3,7 +3,7 @@
 #include "Interfaces/IPluginManager.h"
 #include "Styling/SlateStyleRegistry.h"
 
-#define LOCTEXT_NAMESPACE "FBlueprintToRSTDocModule"
+#define LOCTEXT_NAMESPACE "BlueprintToRSTDoc"
 
 TSharedPtr<FSlateStyleSet> FBlueprintToRSTDocStyle::StyleInstance = nullptr;
 
