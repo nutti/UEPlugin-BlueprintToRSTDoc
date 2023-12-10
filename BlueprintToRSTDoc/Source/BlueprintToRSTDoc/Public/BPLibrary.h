@@ -189,5 +189,7 @@ class BLUEPRINTTORSTDOC_API UBlueprintToRSTDocBPLibrary : public UBlueprintFunct
 
 public:
 	UFUNCTION(BluePrintCallable, exec, category = "BlueprintToRSTDoc")
-	static void GenerateRSTDoc();
+	static void GenerateRSTDoc(const FString& OutputDirectory, const TArray<FString>& ExcludePaths, bool& bSuccess,
+		FString& ErrorMessage, bool bOutputBlueprint = true, bool bOutputStructure = true, bool bOutputEnumeration = true,
+		bool bOutputDocsList = true, const FString& OutputDocsListFileName = "DocsList.txt", bool bOutputDocsListFullPath = false);
 };

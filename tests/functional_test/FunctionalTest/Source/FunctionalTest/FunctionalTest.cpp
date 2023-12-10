@@ -1,5 +1,5 @@
 /*!
- * SampleProject
+ * FunctionalTest
  *
  * Copyright (c) 2019-2023 nutti
  *
@@ -7,8 +7,8 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "SampleProject.h"
+#include "FunctionalTest.h"
 
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, SampleProject, "SampleProject");
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, FunctionalTest, "FunctionalTest");

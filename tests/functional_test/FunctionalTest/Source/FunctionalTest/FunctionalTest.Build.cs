@@ -1,5 +1,5 @@
 /*!
- * SampleProject
+ * FunctionalTest
  *
  * Copyright (c) 2019-2023 nutti
  *
@@ -9,13 +9,13 @@
 
 using UnrealBuildTool;
 
-public class SampleProject : ModuleRules
+public class FunctionalTest : ModuleRules
 {
-	public SampleProject(ReadOnlyTargetRules Target) : base(Target)
+	public FunctionalTest(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[]{"Core", "CoreUObject", "Engine", "InputCore"});
+		PublicDependencyModuleNames.AddRange(new string[]{"Core", "CoreUObject", "Engine", "InputCore", "BlueprintToRSTDoc"});
 
 		PrivateDependencyModuleNames.AddRange(new string[]{});
 

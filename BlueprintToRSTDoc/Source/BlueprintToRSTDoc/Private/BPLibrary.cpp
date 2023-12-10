@@ -1,19 +1,14 @@
 #include "BPLibrary.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "DesktopPlatformModule.h"
+#include "Common.h"
 #include "EdGraphSchema_K2.h"
 #include "Engine/UserDefinedEnum.h"
 #include "Engine/UserDefinedStruct.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "HAL/FileManagerGeneric.h"
-#include "IDesktopPlatform.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Settings.h"
-
-#define ERROR_MESSAGE_BOX(Message)                                                                                 \
-	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok,                                                                  \
-		*FString::Format(TEXT("Error:\n\n{0}\n\n---\n\n{1} (Line:{2})"), {Message, *FString(__FILE__), __LINE__}), \
-		TEXT("BlueprintToRSTDoc"));
 
 void ConvertBPNameToCPPName(FString& Out, const FString& Type)
 {
@@ -454,24 +449,7 @@ bool ParseProperty(FRSTDocProperty& Out, FProperty* Property, bool bIsBlueprint 
 	return true;
 }
 
-bool OpenOutputDirectory(FString& OutDirectory)
-{
-	void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
-	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
-	if (!DesktopPlatform)
-	{
-		ERROR_MESSAGE_BOX(TEXT("Failed to get DesktopPlatform.\n"));
-		return false;
-	}
-	if (!DesktopPlatform->OpenDirectoryDialog(ParentWindowPtr, TEXT("Save RST Documents To"), TEXT(""), OutDirectory))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool GetBlueprintAssets(TArray<FAssetData>& Blueprints, const UBlueprintToRSTDocSettings& Settings)
+bool GetBlueprintAssets(TArray<FAssetData>& Blueprints, const TArray<FString>& ExcludePaths, FString& ErrorMessage)
 {
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(FName("AssetRegistry"));
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
@@ -484,7 +462,7 @@ bool GetBlueprintAssets(TArray<FAssetData>& Blueprints, const UBlueprintToRSTDoc
 
 	if (!AssetRegistry.GetAssets(Filter, Blueprints))
 	{
-		ERROR_MESSAGE_BOX(TEXT("Failed to get assets of 'UBlueprint'."));
+		ErrorMessage = TEXT("Failed to get assets of 'UBlueprint'.");
 		return false;
 	}
 
@@ -493,7 +471,7 @@ bool GetBlueprintAssets(TArray<FAssetData>& Blueprints, const UBlueprintToRSTDoc
 	for (auto& BP : Blueprints)
 	{
 		bool bFound = false;
-		for (auto& Path : Settings.ExcludePaths)
+		for (auto& Path : ExcludePaths)
 		{
 			if (BP.PackagePath.ToString().Find(Path) != -1)
 			{
@@ -514,7 +492,7 @@ bool GetBlueprintAssets(TArray<FAssetData>& Blueprints, const UBlueprintToRSTDoc
 	return true;
 }
 
-bool GetStructureAssets(TArray<FAssetData>& ScriptStructs, const UBlueprintToRSTDocSettings& Settings)
+bool GetStructureAssets(TArray<FAssetData>& ScriptStructs, const TArray<FString>& ExcludePaths, FString& ErrorMessage)
 {
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(FName("AssetRegistry"));
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
@@ -527,7 +505,7 @@ bool GetStructureAssets(TArray<FAssetData>& ScriptStructs, const UBlueprintToRST
 
 	if (!AssetRegistry.GetAssets(Filter, ScriptStructs))
 	{
-		ERROR_MESSAGE_BOX(TEXT("Failed to get assets of 'UUserDefinedStruct'."));
+		ErrorMessage = TEXT("Failed to get assets of 'UUserDefinedStruct'.");
 		return false;
 	}
 
@@ -536,7 +514,7 @@ bool GetStructureAssets(TArray<FAssetData>& ScriptStructs, const UBlueprintToRST
 	for (auto& S : ScriptStructs)
 	{
 		bool bFound = false;
-		for (auto& Path : Settings.ExcludePaths)
+		for (auto& Path : ExcludePaths)
 		{
 			if (S.PackagePath.ToString().Find(Path) != -1)
 			{
@@ -557,7 +535,7 @@ bool GetStructureAssets(TArray<FAssetData>& ScriptStructs, const UBlueprintToRST
 	return true;
 }
 
-bool GetEnumerationAssets(TArray<FAssetData>& Enums, const UBlueprintToRSTDocSettings& Settings)
+bool GetEnumerationAssets(TArray<FAssetData>& Enums, const TArray<FString>& ExcludePaths, FString& ErrorMessage)
 {
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(FName("AssetRegistry"));
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
@@ -570,7 +548,7 @@ bool GetEnumerationAssets(TArray<FAssetData>& Enums, const UBlueprintToRSTDocSet
 
 	if (!AssetRegistry.GetAssets(Filter, Enums))
 	{
-		ERROR_MESSAGE_BOX(TEXT("Failed to get assets of 'UEnum'."));
+		ErrorMessage = TEXT("Failed to get assets of 'UEnum'.");
 		return false;
 	}
 
@@ -579,7 +557,7 @@ bool GetEnumerationAssets(TArray<FAssetData>& Enums, const UBlueprintToRSTDocSet
 	for (auto& E : Enums)
 	{
 		bool bFound = false;
-		for (auto& Path : Settings.ExcludePaths)
+		for (auto& Path : ExcludePaths)
 		{
 			if (E.PackagePath.ToString().Find(Path) != -1)
 			{
@@ -1053,7 +1031,7 @@ void CreateRSTEnumerationDoc(FString& Doc, RSTDocIndent& Indent, const FRSTDocEn
 	Indent.Decrement();
 }
 
-bool CreateDirectoryRecursive(const FString& BaseDirectory, const FString& Directory)
+bool CreateDirectoryRecursive(const FString& BaseDirectory, const FString& Directory, FString& ErrorMessage)
 {
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -1067,7 +1045,7 @@ bool CreateDirectoryRecursive(const FString& BaseDirectory, const FString& Direc
 		FullPath += D;
 		if (!PlatformFile.CreateDirectory(*FullPath))
 		{
-			ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to create directory.\n{0}"), {FullPath}));
+			ErrorMessage = FString::Format(TEXT("Failed to create directory.\n{0}"), {FullPath});
 			return false;
 		}
 	}
@@ -1075,7 +1053,8 @@ bool CreateDirectoryRecursive(const FString& BaseDirectory, const FString& Direc
 	return true;
 }
 
-bool WriteRSTBlueprintDocs(const TArray<FRSTDocBlueprint>& Data, const FString& OutputDirectory, TArray<FString>& OutputDocsList)
+bool WriteRSTBlueprintDocs(
+	const TArray<FRSTDocBlueprint>& Data, const FString& OutputDirectory, TArray<FString>& OutputDocsList, FString& ErrorMessage)
 {
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -1085,13 +1064,13 @@ bool WriteRSTBlueprintDocs(const TArray<FRSTDocBlueprint>& Data, const FString& 
 		ClassDirectory = FString::Format(TEXT("{0}/Blueprint"), {OutputDirectory});
 		if (!PlatformFile.CreateDirectory(*ClassDirectory))
 		{
-			ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to create directory.\n{0}"), {ClassDirectory}));
+			ErrorMessage = FString::Format(TEXT("Failed to create directory.\n{0}"), {ClassDirectory});
 			return false;
 		}
 
 		for (auto& D : Data)
 		{
-			if (!CreateDirectoryRecursive(ClassDirectory, D.Path.RightChop(1)))
+			if (!CreateDirectoryRecursive(ClassDirectory, D.Path.RightChop(1), ErrorMessage))
 			{
 				return false;
 			}
@@ -1104,7 +1083,7 @@ bool WriteRSTBlueprintDocs(const TArray<FRSTDocBlueprint>& Data, const FString& 
 
 			if (!FFileHelper::SaveStringToFile(Contents, *FilePath))
 			{
-				ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to save file.\n{0}"), {FilePath}));
+				ErrorMessage = FString::Format(TEXT("Failed to save file.\n{0}"), {FilePath});
 				return false;
 			}
 
@@ -1115,7 +1094,8 @@ bool WriteRSTBlueprintDocs(const TArray<FRSTDocBlueprint>& Data, const FString& 
 	return true;
 }
 
-bool WriteRSTStructureDocs(const TArray<FRSTDocStructure>& Data, const FString& OutputDirectory, TArray<FString>& OutputDocsList)
+bool WriteRSTStructureDocs(
+	const TArray<FRSTDocStructure>& Data, const FString& OutputDirectory, TArray<FString>& OutputDocsList, FString& ErrorMessage)
 {
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -1125,13 +1105,13 @@ bool WriteRSTStructureDocs(const TArray<FRSTDocStructure>& Data, const FString& 
 		StructDirectory = FString::Format(TEXT("{0}/Struct"), {OutputDirectory});
 		if (!PlatformFile.CreateDirectory(*StructDirectory))
 		{
-			ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to create directory.\n{0}"), {StructDirectory}));
+			ErrorMessage = FString::Format(TEXT("Failed to create directory.\n{0}"), {StructDirectory});
 			return false;
 		}
 
 		for (auto& D : Data)
 		{
-			if (!CreateDirectoryRecursive(StructDirectory, D.Path.RightChop(1)))
+			if (!CreateDirectoryRecursive(StructDirectory, D.Path.RightChop(1), ErrorMessage))
 			{
 				return false;
 			}
@@ -1144,7 +1124,7 @@ bool WriteRSTStructureDocs(const TArray<FRSTDocStructure>& Data, const FString& 
 
 			if (!FFileHelper::SaveStringToFile(Contents, *FilePath))
 			{
-				ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to save file.\n{0}"), {FilePath}));
+				ErrorMessage = FString::Format(TEXT("Failed to save file.\n{0}"), {FilePath});
 				return false;
 			}
 
@@ -1156,7 +1136,7 @@ bool WriteRSTStructureDocs(const TArray<FRSTDocStructure>& Data, const FString& 
 }
 
 bool WriteRSTEnumerationDocs(
-	const TArray<FRSTDocEnumeration>& Data, const FString& OutputDirectory, TArray<FString>& OutputDocsList)
+	const TArray<FRSTDocEnumeration>& Data, const FString& OutputDirectory, TArray<FString>& OutputDocsList, FString& ErrorMessage)
 {
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
@@ -1166,13 +1146,13 @@ bool WriteRSTEnumerationDocs(
 		EnumDirectory = FString::Format(TEXT("{0}/Enum"), {OutputDirectory});
 		if (!PlatformFile.CreateDirectory(*EnumDirectory))
 		{
-			ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to create directory.\n{0}"), {EnumDirectory}));
+			ErrorMessage = FString::Format(TEXT("Failed to create directory.\n{0}"), {EnumDirectory});
 			return false;
 		}
 
 		for (auto& D : Data)
 		{
-			if (!CreateDirectoryRecursive(EnumDirectory, D.Path.RightChop(1)))
+			if (!CreateDirectoryRecursive(EnumDirectory, D.Path.RightChop(1), ErrorMessage))
 			{
 				return false;
 			}
@@ -1185,7 +1165,7 @@ bool WriteRSTEnumerationDocs(
 
 			if (!FFileHelper::SaveStringToFile(Contents, *FilePath))
 			{
-				ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to save file.\n{0}"), {FilePath}));
+				ErrorMessage = FString::Format(TEXT("Failed to save file.\n{0}"), {FilePath});
 				return false;
 			}
 
@@ -1196,7 +1176,7 @@ bool WriteRSTEnumerationDocs(
 	return true;
 }
 
-void AskCleanupOrNot(const FString& Directory)
+void AskCleanupOrNot(const FString& Directory, FString& ErrorMessage)
 {
 	EAppReturnType::Type ReturnType = FPlatformMisc::MessageBoxExt(EAppMsgType::YesNo,
 		*FString::Format(TEXT("Delete incompleted output files.\n{0}"), {Directory}), TEXT("BlueprintToRSTDoc"));
@@ -1205,58 +1185,59 @@ void AskCleanupOrNot(const FString& Directory)
 	{
 		if (!FFileManagerGeneric::Get().DeleteDirectory(*Directory, true, true))
 		{
-			ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to delete directory.\n{0}"), {Directory}));
+			ErrorMessage = FString::Format(TEXT("Failed to delete directory.\n{0}"), {Directory});
 		}
 	}
 }
 
 bool WriteRSTDocs(const TArray<FRSTDocBlueprint>& BlueprintData, const TArray<FRSTDocStructure>& StructData,
-	const TArray<FRSTDocEnumeration>& EnumData, const FString& OutputDirectory, TArray<FString>& OutputDocsList)
+	const TArray<FRSTDocEnumeration>& EnumData, const FString& OutputDirectory, TArray<FString>& OutputDocsList,
+	FString& ErrorMessage)
 {
 	FString RSTOutputDirectory = FString::Format(TEXT("{0}/rst"), {OutputDirectory});
 
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 	if (PlatformFile.DirectoryExists(*RSTOutputDirectory))
 	{
-		ERROR_MESSAGE_BOX(*FString::Format(TEXT("Directory is already exist.\n{0}"), {RSTOutputDirectory}));
+		ErrorMessage = FString::Format(TEXT("Directory is already exist.\n{0}"), {RSTOutputDirectory});
 		return false;
 	}
 	if (!PlatformFile.CreateDirectory(*RSTOutputDirectory))
 	{
-		ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to create directory.\n{0}"), {RSTOutputDirectory}));
+		ErrorMessage = FString::Format(TEXT("Failed to create directory.\n{0}"), {RSTOutputDirectory});
 		return false;
 	}
 
-	if (!WriteRSTBlueprintDocs(BlueprintData, RSTOutputDirectory, OutputDocsList))
+	if (!WriteRSTBlueprintDocs(BlueprintData, RSTOutputDirectory, OutputDocsList, ErrorMessage))
 	{
-		AskCleanupOrNot(RSTOutputDirectory);
+		AskCleanupOrNot(RSTOutputDirectory, ErrorMessage);
 		return false;
 	}
 
-	if (!WriteRSTStructureDocs(StructData, RSTOutputDirectory, OutputDocsList))
+	if (!WriteRSTStructureDocs(StructData, RSTOutputDirectory, OutputDocsList, ErrorMessage))
 	{
-		AskCleanupOrNot(RSTOutputDirectory);
+		AskCleanupOrNot(RSTOutputDirectory, ErrorMessage);
 		return false;
 	}
 
-	if (!WriteRSTEnumerationDocs(EnumData, RSTOutputDirectory, OutputDocsList))
+	if (!WriteRSTEnumerationDocs(EnumData, RSTOutputDirectory, OutputDocsList, ErrorMessage))
 	{
-		AskCleanupOrNot(RSTOutputDirectory);
+		AskCleanupOrNot(RSTOutputDirectory, ErrorMessage);
 		return false;
 	}
 
 	return true;
 }
 
-bool OutputDocsListFile(
-	const FString& OutputDirectory, const TArray<FString>& OutputDocsList, const UBlueprintToRSTDocSettings& Settings)
+bool OutputDocsListFile(const FString& OutputDirectory, const TArray<FString>& OutputDocsList, bool bOutputDocsListFullPath,
+	const FString& OutputDocsListFileName, FString& ErrorMessage)
 {
 	FString RSTOutputDirectory = FString::Format(TEXT("{0}/rst"), {OutputDirectory});
 
 	TArray<FString> DocsList;
 	for (auto& Doc : OutputDocsList)
 	{
-		if (Settings.bOutputDocsListFullPath)
+		if (bOutputDocsListFullPath)
 		{
 			DocsList.Add(Doc);
 		}
@@ -1268,84 +1249,78 @@ bool OutputDocsListFile(
 			}
 			else
 			{
-				ERROR_MESSAGE_BOX(*FString::Format(TEXT("{0} does not include {1}."), {RSTOutputDirectory, Doc}));
-				AskCleanupOrNot(RSTOutputDirectory);
+				ErrorMessage = FString::Format(TEXT("{0} does not include {1}."), {RSTOutputDirectory, Doc});
+				AskCleanupOrNot(RSTOutputDirectory, ErrorMessage);
 				return false;
 			}
 		}
 	}
 
-	FString FilePath = FString::Format(TEXT("{0}/{1}"), {RSTOutputDirectory, Settings.OutputDocsListFileName});
+	FString FilePath = FString::Format(TEXT("{0}/{1}"), {RSTOutputDirectory, OutputDocsListFileName});
 	FString Contents = FString::Join(DocsList, TEXT("\n"));
 	if (!FFileHelper::SaveStringToFile(Contents, *FilePath))
 	{
-		ERROR_MESSAGE_BOX(*FString::Format(TEXT("Failed to create file.\n{0}"), {FilePath}));
-		AskCleanupOrNot(RSTOutputDirectory);
+		ErrorMessage = FString::Format(TEXT("Failed to create file.\n{0}"), {FilePath});
+		AskCleanupOrNot(RSTOutputDirectory, ErrorMessage);
 		return false;
 	}
 
 	return true;
 }
 
-void UBlueprintToRSTDocBPLibrary::GenerateRSTDoc()
+void UBlueprintToRSTDocBPLibrary::GenerateRSTDoc(const FString& OutputDirectory, const TArray<FString>& ExcludePaths,
+	bool& bSuccess, FString& ErrorMessage, bool bOutputBlueprint, bool bOutputStructure, bool bOutputEnumeration,
+	bool bOutputDocsList, const FString& OutputDocsListFileName, bool bOutputDocsListFullPath)
 {
-	UBlueprintToRSTDocSettings* Settings = GetMutableDefault<UBlueprintToRSTDocSettings>();
-
-	FString OutputDirectory = Settings->OutputDirectory;
-	if (Settings->bAlwaysAskOutputDirectory)
-	{
-		if (!OpenOutputDirectory(OutputDirectory))
-		{
-			return;
-		}
-	}
-
 	TArray<FRSTDocBlueprint> DocBlueprints;
-	if (Settings->bOutputBlueprint)
+	if (bOutputBlueprint)
 	{
 		TArray<FAssetData> Blueprints;
-		if (!GetBlueprintAssets(Blueprints, *Settings))
+		if (!GetBlueprintAssets(Blueprints, ExcludePaths, ErrorMessage))
 		{
+			bSuccess = false;
 			return;
 		}
 		ParseBlueprints(DocBlueprints, Blueprints);
 	}
 
 	TArray<FRSTDocStructure> DocStructures;
-	if (Settings->bOutputStructure)
+	if (bOutputStructure)
 	{
 		TArray<FAssetData> ScriptStructs;
-		if (!GetStructureAssets(ScriptStructs, *Settings))
+		if (!GetStructureAssets(ScriptStructs, ExcludePaths, ErrorMessage))
 		{
+			bSuccess = false;
 			return;
 		}
 		ParseStructures(DocStructures, ScriptStructs);
 	}
 
 	TArray<FRSTDocEnumeration> DocEnumerations;
-	if (Settings->bOutputEnumeration)
+	if (bOutputEnumeration)
 	{
 		TArray<FAssetData> Enums;
-		if (!GetEnumerationAssets(Enums, *Settings))
+		if (!GetEnumerationAssets(Enums, ExcludePaths, ErrorMessage))
 		{
+			bSuccess = false;
 			return;
 		}
 		ParseEnumerations(DocEnumerations, Enums);
 	}
 
 	TArray<FString> OutputDocsList;
-	if (!WriteRSTDocs(DocBlueprints, DocStructures, DocEnumerations, OutputDirectory, OutputDocsList))
+	if (!WriteRSTDocs(DocBlueprints, DocStructures, DocEnumerations, OutputDirectory, OutputDocsList, ErrorMessage))
 	{
+		bSuccess = false;
 		return;
 	}
 
-	if (Settings->bOutputDocsList)
+	if (bOutputDocsList)
 	{
-		if (!OutputDocsListFile(OutputDirectory, OutputDocsList, *Settings))
+		if (!OutputDocsListFile(OutputDirectory, OutputDocsList, bOutputDocsListFullPath, OutputDocsListFileName, ErrorMessage))
 		{
+			bSuccess = false;
 			return;
 		}
 	}
-
-	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("Generated documents successfully."), TEXT("BlueprintToRSTDoc"));
 }

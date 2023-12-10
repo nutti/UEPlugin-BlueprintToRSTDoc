@@ -4,7 +4,10 @@
 
 #include "BPLibrary.h"
 #include "Commands.h"
+#include "Common.h"
+#include "DesktopPlatformModule.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "IDesktopPlatform.h"
 #include "ISettingsModule.h"
 #include "LevelEditor.h"
 #include "Misc/EngineVersionComparison.h"
@@ -13,6 +16,23 @@
 #include "ToolMenus.h"
 
 #define LOCTEXT_NAMESPACE "BlueprintToRSTDoc"
+
+bool OpenOutputDirectory(FString& OutDirectory)
+{
+	void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (!DesktopPlatform)
+	{
+		ERROR_MESSAGE_BOX(TEXT("Failed to get DesktopPlatform.\n"));
+		return false;
+	}
+	if (!DesktopPlatform->OpenDirectoryDialog(ParentWindowPtr, TEXT("Save RST Documents To"), TEXT(""), OutDirectory))
+	{
+		return false;
+	}
+
+	return true;
+}
 
 void FBlueprintToRSTDocModule::StartupModule()
 {
@@ -69,7 +89,31 @@ void FBlueprintToRSTDocModule::ShutdownModule()
 
 void FBlueprintToRSTDocModule::CommandExecuted()
 {
-	UBlueprintToRSTDocBPLibrary::GenerateRSTDoc();
+	UBlueprintToRSTDocSettings* Settings = GetMutableDefault<UBlueprintToRSTDocSettings>();
+
+	FString OutputDirectory = Settings->OutputDirectory;
+	if (Settings->bAlwaysAskOutputDirectory)
+	{
+		if (!OpenOutputDirectory(OutputDirectory))
+		{
+			return;
+		}
+	}
+
+	bool bSuccess;
+	FString ErrorMessage;
+	UBlueprintToRSTDocBPLibrary::GenerateRSTDoc(OutputDirectory, Settings->ExcludePaths, bSuccess, ErrorMessage,
+		Settings->bOutputBlueprint, Settings->bOutputStructure, Settings->bOutputEnumeration, Settings->bOutputDocsList,
+		Settings->OutputDocsListFileName, Settings->bOutputDocsListFullPath);
+
+	if (!bSuccess)
+	{
+		ERROR_MESSAGE_BOX(ErrorMessage);
+	}
+	else
+	{
+		FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("Generated documents successfully."), TEXT("BlueprintToRSTDoc"));
+	}
 }
 
 void FBlueprintToRSTDocModule::AddToolBarExtension(FToolBarBuilder& Builder)
