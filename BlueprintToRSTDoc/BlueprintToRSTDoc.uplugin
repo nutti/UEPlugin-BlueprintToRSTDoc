@@ -16,7 +16,7 @@
   "Modules": [
     {
       "Name": "BlueprintToRSTDoc",
-      "Type": "Runtime",
+      "Type": "Editor",
       "LoadingPhase": "PreLoadingScreen"
     }
   ]

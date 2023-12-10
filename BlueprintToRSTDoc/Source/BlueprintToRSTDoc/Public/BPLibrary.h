@@ -188,6 +188,6 @@ class BLUEPRINTTORSTDOC_API UBlueprintToRSTDocBPLibrary : public UBlueprintFunct
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BluePrintCallable, exec)
+	UFUNCTION(BluePrintCallable, exec, category = "BlueprintToRSTDoc")
 	static void GenerateRSTDoc();
 };

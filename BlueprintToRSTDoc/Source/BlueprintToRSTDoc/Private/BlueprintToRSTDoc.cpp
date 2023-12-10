@@ -10,6 +10,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Settings.h"
 #include "Style.h"
+#include "ToolMenus.h"
 
 #define LOCTEXT_NAMESPACE "BlueprintToRSTDoc"
 

@@ -79,6 +79,7 @@ FString GetEdGraphPinType(UEdGraphPin* Pin)
 	}
 	else
 	{
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 		if (Pin->PinType.PinCategory == UEdGraphSchema_K2::PC_Real)
 		{
 			PinType = Pin->PinType.PinSubCategory.ToString();
@@ -87,6 +88,9 @@ FString GetEdGraphPinType(UEdGraphPin* Pin)
 		{
 			PinType = Pin->PinType.PinCategory.ToString();
 		}
+#else
+		PinType = Pin->PinType.PinCategory.ToString();
+#endif
 	}
 
 	return PinType;
