@@ -3,13 +3,14 @@
   "Version": 1,
   "VersionName": "1.0",
   "FriendlyName": "Blueprint to reStructuredText Document",
-  "Description": "Generate reStructuredText Format Documents from Blueprints",
+  "Description": "Generate reStructuredText (RST) Format Documents from Blueprints",
+  "EngineVersion": "5.3.0",
   "Category": "Other",
   "CreatedBy": "nutti (Colorful Pico)",
-  "CreatedByURL": "https://github.com/nutti/UE4-BlueprintToRSTDoc",
-  "DocsURL": "",
-  "MarketplaceURL": "",
-  "SupportURL": "",
+  "CreatedByURL": "https://github.com/nutti/UEPlugin-BlueprintToRSTDoc",
+  "DocsURL": "https://github.com/nutti/UEPlugin-BlueprintToRSTDoc",
+  "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/1f1e55f4456947a0aa95ab8ff4370866",
+  "SupportURL": "https://github.com/nutti/UEPlugin-BlueprintToRSTDoc",
   "CanContainContent": true,
   "IsBetaVersion": false,
   "Installed": false,
@@ -17,7 +18,12 @@
     {
       "Name": "BlueprintToRSTDoc",
       "Type": "Editor",
-      "LoadingPhase": "PreLoadingScreen"
+      "LoadingPhase": "PreLoadingScreen",
+      "WhitelistPlatforms": [
+        "Win64",
+        "Mac",
+        "Linux"
+      ]
     }
   ]
 }
