@@ -5,6 +5,10 @@ from Blueprints.
 
 ![Thumbnail](docs/images/thumbnail.png)
 
+## Features
+
+* Genereate reStructuredText (RST) documents from Blueprints.
+
 ## Supported Environment
 
 * Unreal Engine Version: 4.25-4.27, 5.0-

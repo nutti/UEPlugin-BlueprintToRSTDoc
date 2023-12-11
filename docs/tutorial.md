@@ -2,6 +2,8 @@
 
 ## 1. Configure documents generation settings
 
+![Plugin Configuration](images/tutorial/plugin_configuration.png)
+
 The configuration for this plugin is available on *Settings* >
 *Project Settings...* > *Plugins* > *BlueprintToRSTDoc*.
 
@@ -25,14 +27,15 @@ The configuration for this plugin is available on *Settings* >
 
 ## 2. Generate documents
 
-![Tutorial Process 2](images/tutorial/process_2.png)
+![Generate Documents](images/tutorial/generate_documents.png)
 
-Click *BlueprintToRSTDoc* button or execute *Window* > *BlueprintToRSTDoc*.  
-Then, specify the output directory of generated documents. (This process will
-be skipped when the setting *Path > Always Ask Output Directory* is off.)
+1. Click *BlueprintToRSTDoc* button or execute *Tools* > *Generate RST Document*.
+2. Specify the output directory of generated documents from the opened window.
+   (This process will be skipped when the setting *Path* >
+   *Always Ask Output Directory* is off.)
+3. Message box will be popped up after documents generated.
 
-After generating documents, message box will be popped up.  
-Generated documents are located on the directory you specified.
+Generated documents are located on the specified directory.
 
 ## 3. Use Sphinx to generate pretty documents (Optional)
 

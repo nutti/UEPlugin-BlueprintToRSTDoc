@@ -1323,4 +1323,6 @@ void UBlueprintToRSTDocBPLibrary::GenerateRSTDoc(const FString& OutputDirectory,
 			return;
 		}
 	}
+
+	bSuccess = true;
 }
