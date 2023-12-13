@@ -7,7 +7,7 @@ from Blueprints.
 
 ## Features
 
-* Genereate reStructuredText (RST) documents from Blueprints.
+* Generate reStructuredText (RST) documents from Blueprints.
 
 ## Supported Environment
 
