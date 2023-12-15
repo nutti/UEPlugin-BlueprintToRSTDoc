@@ -2,6 +2,7 @@
  * BlueprintToRSTDoc
  *
  * Copyright (c) 2020-2023 nutti
+ * Copyright (c) 2018 historia
  *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
