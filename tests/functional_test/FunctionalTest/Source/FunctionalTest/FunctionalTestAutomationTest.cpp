@@ -31,12 +31,23 @@ bool FFuntionalTestSyncVersion::RunTest(const FString& Parameters)
 	// Generate RST documents.
 	bool bSuccess;
 	FString ErrorMessage;
-	UBlueprintToRSTDocBPLibrary::GenerateRSTDoc(
-		OutputDirectory, {"ChaosNiagara", "Engine", "DatasmithContent", "Niagara"}, bSuccess, ErrorMessage);
+	TArray<FString> ExcludePaths = {
+		"ChaosNiagara",
+		"Engine",
+		"DatasmithContent",
+		"Niagara",
+		"ChaosVD",
+		"Takes",
+		"AudioWidgets",
+		"ControlRig",
+		"ControlRigModules",
+		"ControlRigSpline",
+	};
+	UBlueprintToRSTDocBPLibrary::GenerateRSTDoc(OutputDirectory, ExcludePaths, bSuccess, ErrorMessage);
 	if (!bSuccess)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s"), *ErrorMessage);
-		return 1;
+		return false;
 	}
 
 	IFileManager& FileManager = FFileManagerGeneric::Get();
@@ -51,7 +62,7 @@ bool FFuntionalTestSyncVersion::RunTest(const FString& Parameters)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Number of Files is not matched: %d (Expected) vs %d (Actual)"), ExpectedFiles.Num(),
 			ActualFiles.Num());
-		return 1;
+		return false;
 	}
 
 	TMap<FString, FString> FilePairs;
@@ -62,7 +73,7 @@ bool FFuntionalTestSyncVersion::RunTest(const FString& Parameters)
 		if (Index == INDEX_NONE)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Not Found: %s"), *FileName);
-			return 1;
+			return false;
 		}
 
 		FString Expected;
@@ -72,11 +83,11 @@ bool FFuntionalTestSyncVersion::RunTest(const FString& Parameters)
 		if (Expected != Actual)
 		{
 			UE_LOG(LogTemp, Error, TEXT("File Content does not match (File: %s)"), *E);
-			return 1;
+			return false;
 		}
 	}
 
 	PlatformFile.DeleteDirectoryRecursively(*OutputDirectory);
 
-	return 0;
+	return true;
 }

@@ -467,7 +467,11 @@ bool GetBlueprintAssets(TArray<FAssetData>& Blueprints, const TArray<FString>& E
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
 	Filter.bIncludeOnlyOnDiskAssets = true;
+#if UE_VERSION_NEWER_THAN(5, 1, 0)
+	Filter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
+#else
 	Filter.ClassNames.Add(UBlueprint::StaticClass()->GetFName());
+#endif
 	Filter.bRecursiveClasses = true;
 
 	if (!AssetRegistry.GetAssets(Filter, Blueprints))
@@ -510,7 +514,11 @@ bool GetStructureAssets(TArray<FAssetData>& ScriptStructs, const TArray<FString>
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
 	Filter.bIncludeOnlyOnDiskAssets = true;
+#if UE_VERSION_NEWER_THAN(5, 1, 0)
+	Filter.ClassPaths.Add(UUserDefinedStruct::StaticClass()->GetClassPathName());
+#else
 	Filter.ClassNames.Add(UUserDefinedStruct::StaticClass()->GetFName());
+#endif
 	Filter.bRecursiveClasses = true;
 
 	if (!AssetRegistry.GetAssets(Filter, ScriptStructs))
@@ -553,7 +561,11 @@ bool GetEnumerationAssets(TArray<FAssetData>& Enums, const TArray<FString>& Excl
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
 	Filter.bIncludeOnlyOnDiskAssets = true;
+#if UE_VERSION_NEWER_THAN(5, 1, 0)
+	Filter.ClassPaths.Add(UUserDefinedEnum::StaticClass()->GetClassPathName());
+#else
 	Filter.ClassNames.Add(UUserDefinedEnum::StaticClass()->GetFName());
+#endif
 	Filter.bRecursiveClasses = true;
 
 	if (!AssetRegistry.GetAssets(Filter, Enums))

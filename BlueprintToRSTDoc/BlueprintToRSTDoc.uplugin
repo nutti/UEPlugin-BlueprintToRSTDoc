@@ -4,7 +4,7 @@
   "VersionName": "1.1",
   "FriendlyName": "Blueprint to reStructuredText Document",
   "Description": "Generate reStructuredText (RST) Format Documents from Blueprints",
-  "EngineVersion": "5.3.0",
+  "EngineVersion": "5.4.0",
   "Category": "Other",
   "CreatedBy": "nutti (Colorful Pico)",
   "CreatedByURL": "https://github.com/nutti/UEPlugin-BlueprintToRSTDoc",
