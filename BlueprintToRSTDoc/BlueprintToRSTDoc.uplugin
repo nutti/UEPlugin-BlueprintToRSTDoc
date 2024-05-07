@@ -1,7 +1,7 @@
 {
   "FileVersion": 3,
   "Version": 1,
-  "VersionName": "1.1",
+  "VersionName": "1.2",
   "FriendlyName": "Blueprint to reStructuredText Document",
   "Description": "Generate reStructuredText (RST) Format Documents from Blueprints",
   "EngineVersion": "5.4.0",
