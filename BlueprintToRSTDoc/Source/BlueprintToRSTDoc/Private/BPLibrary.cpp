@@ -14,11 +14,16 @@
 #include "Common.h"
 #include "EdGraphSchema_K2.h"
 #include "Engine/UserDefinedEnum.h"
-#include "Engine/UserDefinedStruct.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "HAL/FileManagerGeneric.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Settings.h"
+
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
+#include "StructUtils/UserDefinedStruct.h"
+#else
+#include "Engine/UserDefinedStruct.h"
+#endif
 
 void ConvertBPNameToCPPName(FString& Out, const FString& Type)
 {
