@@ -27,10 +27,9 @@ See [the tutorial](docs/tutorial.md).
 
 See [CHANGELOG.md](CHANGELOG.md).
 
-## Bug Report / Feature Request / Disscussions
-
-If you want to report bug, request features or discuss about this add-on,
-see [ISSUES.md](ISSUES.md).
+If you want to report problems or request features, please
+[make issues](https://github.com/nutti/UEPlugin-BlueprintToRSTDoc/issues).  
+You can also discuss about this plugin at [Discord (blueprint-to-rst-doc channel)](https://discord.gg/AtjNyRtT97).
 
 ## Contribution
 
