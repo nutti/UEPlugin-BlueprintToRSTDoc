@@ -9,17 +9,17 @@
 
 #include "BlueprintToRSTDoc.h"
 
-#include "BPLibrary.h"
-#include "Commands.h"
-#include "Common.h"
+#include "BlueprintToRSTDocBPLibrary.h"
+#include "BlueprintToRSTDocCommands.h"
+#include "BlueprintToRSTDocCommon.h"
+#include "BlueprintToRSTDocSettings.h"
+#include "BlueprintToRSTDocStyle.h"
 #include "DesktopPlatformModule.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "IDesktopPlatform.h"
 #include "ISettingsModule.h"
 #include "LevelEditor.h"
 #include "Misc/EngineVersionComparison.h"
-#include "Settings.h"
-#include "Style.h"
 #include "ToolMenus.h"
 
 #define LOCTEXT_NAMESPACE "BlueprintToRSTDoc"

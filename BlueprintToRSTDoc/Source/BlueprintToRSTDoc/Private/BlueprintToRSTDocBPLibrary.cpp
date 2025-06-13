@@ -8,16 +8,16 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "BPLibrary.h"
+#include "BlueprintToRSTDocBPLibrary.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "Common.h"
+#include "BlueprintToRSTDocCommon.h"
+#include "BlueprintToRSTDocSettings.h"
 #include "EdGraphSchema_K2.h"
 #include "Engine/UserDefinedEnum.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "HAL/FileManagerGeneric.h"
 #include "Misc/EngineVersionComparison.h"
-#include "Settings.h"
 
 #if !UE_VERSION_OLDER_THAN(5, 5, 0)
 #include "StructUtils/UserDefinedStruct.h"

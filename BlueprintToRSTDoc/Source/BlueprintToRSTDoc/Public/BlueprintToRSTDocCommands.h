@@ -9,8 +9,8 @@
 
 #pragma once
 
+#include "BlueprintToRSTDocStyle.h"
 #include "Framework/Commands/Commands.h"
-#include "Style.h"
 #include "UObject/ObjectMacros.h"
 
 class FBlueprintToRSTDocCommands : public TCommands<FBlueprintToRSTDocCommands>

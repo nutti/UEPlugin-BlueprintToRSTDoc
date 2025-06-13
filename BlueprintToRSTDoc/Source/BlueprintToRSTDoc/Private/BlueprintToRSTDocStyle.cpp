@@ -7,7 +7,7 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "Style.h"
+#include "BlueprintToRSTDocStyle.h"
 
 #include "Interfaces/IPluginManager.h"
 #include "Styling/SlateStyleRegistry.h"

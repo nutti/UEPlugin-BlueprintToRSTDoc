@@ -12,7 +12,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "UObject/ObjectMacros.h"
 
-#include "BPLibrary.generated.h"
+#include "BlueprintToRSTDocBPLibrary.generated.h"
 
 UENUM()
 enum class ERSTDocEdGraphPinKind : uint8

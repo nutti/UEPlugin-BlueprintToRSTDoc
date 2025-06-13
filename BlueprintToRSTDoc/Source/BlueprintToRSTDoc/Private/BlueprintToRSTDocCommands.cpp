@@ -7,7 +7,7 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "Commands.h"
+#include "BlueprintToRSTDocCommands.h"
 
 #define LOCTEXT_NAMESPACE "BlueprintToRSTDoc"
 

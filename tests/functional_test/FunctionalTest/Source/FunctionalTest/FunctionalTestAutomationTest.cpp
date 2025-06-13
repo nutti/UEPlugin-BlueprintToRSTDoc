@@ -7,7 +7,7 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "BPLibrary.h"
+#include "BlueprintToRSTDocBPLibrary.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "HAL/FileManagerGeneric.h"
 #include "Kismet/KismetSystemLibrary.h"

@@ -11,9 +11,9 @@
 
 #include "UObject/ObjectMacros.h"
 
-#include "Settings.generated.h"
+#include "BlueprintToRSTDocSettings.generated.h"
 
-UCLASS(config = BlueprintToDocUserSettings)
+UCLASS(config = BlueprintToRSTDocSettings)
 class UBlueprintToRSTDocSettings : public UObject
 {
 	GENERATED_BODY()
