@@ -2,7 +2,14 @@
 
 # Change Log
 
-## [Unreleased](https://github.com/nutti/UE4-BlueprintToRSTDoc/compare/v1.3.0...main)
+## [Unreleased](https://github.com/nutti/UE4-BlueprintToRSTDoc/compare/v1.4.0...main)
+
+<!-- markdownlint-disable-next-line MD013 -->
+## [Version 1.4.0](https://github.com/nutti/UE4-BlueprintToRSTDoc/compare/v1.3.0...v1.4.0) - 2025.6.14
+
+### Updated Features
+
+* Support on Unreal Engine 5.6
 
 <!-- markdownlint-disable-next-line MD013 -->
 ## [Version 1.3.0](https://github.com/nutti/UE4-BlueprintToRSTDoc/compare/v1.2.0...v1.3.0) - 2024.12.31
